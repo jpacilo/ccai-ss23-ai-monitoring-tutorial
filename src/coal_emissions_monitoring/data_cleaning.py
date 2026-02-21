@@ -523,7 +523,7 @@ def clean_final_dataset(df: pd.DataFrame) -> gpd.GeoDataFrame:
             well as the emissions data that we'll train models on
     """
     # fix datetime column data type
-    df.ts = pd.to_datetime(df.ts)
+    df.ts = pd.to_datetime(df.ts, format="ISO8601")
     # fix geometry column data type
     df.geometry = gpd.GeoSeries.from_wkt(df.geometry)
     gdf = gpd.GeoDataFrame(df, geometry=df.geometry, crs=f"EPSG:{GLOBAL_EPSG}")
