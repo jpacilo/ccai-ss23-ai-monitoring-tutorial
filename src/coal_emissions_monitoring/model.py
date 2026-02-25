@@ -176,15 +176,18 @@ class CoalEmissionsClassificationModel(LightningModule):
         return self.shared_step(batch, batch_idx, stage="test")
 
     def configure_optimizers(self):
-        optimizer = torch.optim.Adam(self.parameters(), lr=self.learning_rate)
+        optimizer = torch.optim.AdamW(
+            self.parameters(),
+            lr=self.learning_rate,
+            weight_decay=self.weight_decay,
+        )
         return {
             "optimizer": optimizer,
             "lr_scheduler": torch.optim.lr_scheduler.ReduceLROnPlateau(
-                optimizer, mode="min", factor=0.1, patience=3
+                optimizer, mode="min", factor=0.1, patience=5
             ),
             "monitor": "val_loss",
         }
-
 
 # backward-compat alias for existing notebooks/scripts
 CoalEmissionsModel = CoalEmissionsClassificationModel
@@ -194,11 +197,13 @@ class CoalEmissionsRegressionModel(LightningModule):
     def __init__(
         self,
         model: torch.nn.Module,
-        learning_rate: float = 1e-3,
+        learning_rate: float = 1e-4,
+        weight_decay: float = 1e-4,
     ):
         super().__init__()
         self.model = model
         self.learning_rate = learning_rate
+        self.weight_decay = weight_decay
         self.loss = torch.nn.MSELoss()
 
     def forward(self, x):
