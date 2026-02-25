@@ -204,7 +204,7 @@ class CoalEmissionsRegressionModel(LightningModule):
         self.model = model
         self.learning_rate = learning_rate
         self.weight_decay = weight_decay
-        self.loss = torch.nn.MSELoss()
+        self.loss = torch.nn.HuberLoss(delta=0.1)
 
     def forward(self, x):
         preds = self.model(x).squeeze(-1)
