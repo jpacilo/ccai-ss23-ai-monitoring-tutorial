@@ -5,7 +5,7 @@ from coal_emissions_monitoring.constants import CROP_SIZE_PX, RANDOM_TRANSFORM_P
 
 
 def get_transform(
-    data_group: str, crop_size: int = CROP_SIZE_PX
+    data_group: str, crop_size: int = CROP_SIZE_PX, augment: bool = True
 ) -> K.AugmentationSequential:
     """
     Get the transform for the given data group, i.e. train, val, or test.
@@ -13,30 +13,28 @@ def get_transform(
     Args:
         data_group (str): data group
         crop_size (int): crop size
+        augment (bool): whether to apply data augmentation during training
 
     Returns:
         K.AugmentationSequential: transforms
     """
-    if data_group == "train":
+    if data_group == "train" and augment:
         return K.AugmentationSequential(
+            # spatial transforms
             K.RandomCrop(size=(crop_size, crop_size)),
             K.RandomHorizontalFlip(p=RANDOM_TRANSFORM_PROB),
+            K.RandomVerticalFlip(p=RANDOM_TRANSFORM_PROB),
             K.RandomRotation(p=RANDOM_TRANSFORM_PROB, degrees=90),
-            # TODO this contrast transform is sometimes making the image too dark
-            # consider fixing it if needing more regularization
-            # K.RandomContrast(p=RANDOM_TRANSFORM_PROB, contrast=(0.9, 1.1)),
+            K.RandomAffine(p=RANDOM_TRANSFORM_PROB, degrees=0, translate=(0.1, 0.1), scale=(0.9, 1.1)),
+            # photometric transforms
+            K.RandomBrightness(p=RANDOM_TRANSFORM_PROB, brightness=(0.8, 1.2)),
+            K.RandomContrast(p=RANDOM_TRANSFORM_PROB, contrast=(0.8, 1.2)),
+            K.RandomGaussianBlur(p=RANDOM_TRANSFORM_PROB, kernel_size=(3, 3), sigma=(0.1, 1.0)),
             data_keys=["image"],
             same_on_batch=False,
             keepdim=True,
         )
-    elif data_group == "val":
-        return K.AugmentationSequential(
-            K.CenterCrop(size=(crop_size, crop_size)),
-            data_keys=["image"],
-            same_on_batch=False,
-            keepdim=True,
-        )
-    elif data_group == "test":
+    elif data_group in ("train", "val", "test"):
         return K.AugmentationSequential(
             K.CenterCrop(size=(crop_size, crop_size)),
             data_keys=["image"],
@@ -45,7 +43,8 @@ def get_transform(
         )
     else:
         raise ValueError(
-            f"Invalid data group: {data_group}." "Expected one of: train, val, test."
+            f"Invalid data group: {data_group}. "
+            "Expected one of: train, val, test."
         )
 
 

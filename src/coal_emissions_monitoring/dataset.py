@@ -173,6 +173,7 @@ class CoalEmissionsDataModule(LightningDataModule):
         download_missing_images: bool = False,
         images_dir: str = "images/",
         num_workers: int = 0,
+        augment: bool = True,
     ):
         """
         Lightning Data Module that gets images of coal power plants,
@@ -217,6 +218,8 @@ class CoalEmissionsDataModule(LightningDataModule):
                 The directory to save images to if predownload_images is True
             num_workers (int):
                 The number of workers to use for loading data
+            augment (bool):
+                Whether to apply data augmentation during training
         """
         super().__init__()
         self.final_dataset_path = final_dataset_path
@@ -236,6 +239,7 @@ class CoalEmissionsDataModule(LightningDataModule):
         self.download_missing_images = download_missing_images
         self.images_dir = images_dir
         self.num_workers = num_workers
+        self.augment = augment
         self.emissions_quantiles = None
 
     def setup(self, stage: str):
@@ -302,7 +306,7 @@ class CoalEmissionsDataModule(LightningDataModule):
                 gdf=self.gdf[self.gdf.data_set == "train"].sample(frac=1),
                 target=self.target,
                 image_size=self.image_size,
-                transforms=get_transform(data_group="train", crop_size=self.crop_size),
+                transforms=get_transform(data_group="train", crop_size=self.crop_size, augment=self.augment),
                 use_local_images=self.predownload_images,
                 max_dark_frac=self.max_dark_frac,
                 max_mean_val=self.max_mean_val,
