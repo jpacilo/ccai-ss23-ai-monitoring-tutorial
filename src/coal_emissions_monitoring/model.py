@@ -177,8 +177,9 @@ class CoalEmissionsClassificationModel(LightningModule):
         return self.shared_step(batch, batch_idx, stage="test")
 
     def configure_optimizers(self):
+        trainable = [p for p in self.parameters() if p.requires_grad]
         optimizer = torch.optim.AdamW(
-            self.parameters(),
+            trainable,
             lr=self.learning_rate,
             weight_decay=self.weight_decay,
         )
@@ -260,8 +261,9 @@ class CoalEmissionsRegressionModel(LightningModule):
         return self.shared_step(batch, batch_idx, stage="test")
 
     def configure_optimizers(self):
+        trainable = [p for p in self.parameters() if p.requires_grad]
         optimizer = torch.optim.AdamW(
-            self.parameters(),
+            trainable,
             lr=self.learning_rate,
             weight_decay=self.weight_decay,
         )
@@ -411,8 +413,9 @@ class CoalEmissionsMultitaskModel(LightningModule):
         return self.shared_step(batch, batch_idx, stage="test")
 
     def configure_optimizers(self):
+        trainable = [p for p in self.parameters() if p.requires_grad]
         optimizer = torch.optim.AdamW(
-            self.parameters(),
+            trainable,
             lr=self.learning_rate,
             weight_decay=self.weight_decay,
         )
